@@ -62,11 +62,15 @@ public class Config
 
     public Config set(String key, Object v)
     {
+        // System.out.println("Config.java の setの中 (引数は展開されていない) =============");
+        // System.out.println("引数のkey: "+key+", "+"引数のv: "+v);
         if (v == null) {
             remove(key);
         } else {
             setNode(key, writeObject(v));
         }
+        // System.out.println("setNode後のthis(Config)(展開されない) =============");
+        // System.out.println(this);
         return this;
     }
 
@@ -193,6 +197,7 @@ public class Config
 
     private JsonNode writeObject(Object obj)
     {
+        // 怪しい
         try {
             String value = mapper.writeValueAsString(obj);
             return mapper.readTree(value);

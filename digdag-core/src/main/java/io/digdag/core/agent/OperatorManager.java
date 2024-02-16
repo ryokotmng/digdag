@@ -218,6 +218,7 @@ public class OperatorManager
             throws RuntimeException, AssertionError
     {
         try {
+            System.out.println("evalConfigに来た ===========");
             Config all = cf.create();
             all.merge(request.getConfig());  // export / carry params (TaskRequest.config sent by WorkflowExecutor doesn't include config of this task)
             Config runtimeParams = RuntimeParams.buildRuntimeParams(request.getConfig().getFactory(), request).deepCopy();
@@ -226,6 +227,10 @@ public class OperatorManager
             Config evalParams = all.deepCopy();
             all.merge(request.getLocalConfig());
 
+            System.out.println("all (展開されていない) ===========");
+            System.out.println(all);
+            System.out.println("evalParams (展開されていない) ===========");
+            System.out.println(evalParams);
             //ToDo get metrics on parameter size
             return evalEngine.eval(all, evalParams);
         }
@@ -243,7 +248,10 @@ public class OperatorManager
         // evaluate config and creates the complete merged config.
         Config config;
         try {
+            // ここでrequestからconfigを作っている
             config = evalConfig(request);
+            System.out.println("evalConfigの結果 ===========");
+            System.out.println(config);
         }
         catch (ConfigException ex) {
             throw ex;

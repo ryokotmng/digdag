@@ -175,6 +175,7 @@ public class ConfigEvalEngine
         private ObjectNode evalObjectRecursive(ObjectNode local)
             throws TemplateException
         {
+            System.out.println("evalObjectRecursiveの中 ================");
             ObjectNode built = local.objectNode();
             for (Map.Entry<String, JsonNode> pair : ImmutableList.copyOf(local.fields())) {
                 JsonNode value = pair.getValue();
@@ -185,6 +186,7 @@ public class ConfigEvalEngine
                 }
                 else if (value.isObject()) {
                     evaluated = evalObjectRecursive((ObjectNode) value);
+                    System.out.println("value.isObjectの中 value: "+value+", evaluated: "+evaluated);
                 }
                 else if (value.isArray()) {
                     evaluated = evalArrayRecursive(built, (ArrayNode) value);
@@ -193,10 +195,12 @@ public class ConfigEvalEngine
                     // eval using template engine
                     String code = value.textValue();
                     evaluated = evalValue(built, code);
+                    System.out.println("value.isTextualの中 value: "+value+", code: "+code+", evaluated: "+evaluated);
                 }
                 else {
                     evaluated = value;
                 }
+                // System.out.println("value: "+value+", evaluated: "+evaluated);
                 built.set(pair.getKey(), evaluated);
             }
             return built;
@@ -306,23 +310,28 @@ public class ConfigEvalEngine
     protected Config eval(Config config, Config params)
         throws TemplateException
     {
+        System.out.println("ConfigEvalEngine.java の eval にきた ==================");
         ObjectNode object = config.convert(ObjectNode.class);
 
         Object built;
         switch (jsEngineType) {
         case NASHORN:
+            System.out.println("built (NASHORN) -----------------");
             try (JsEngine.Evaluator evaluator = nashorn.newEvaluator(params)) {
                 built = new Context(params, evaluator).evalObjectRecursive(object);
             }
             break;
 
         case GRAAL:
+            System.out.println("built (GRAAL) -----------------"); // ここには来ている
+            System.out.println("params: "+params);
             try (JsEngine.Evaluator evaluator = graal.newEvaluator(params)) {
                 built = new Context(params, evaluator).evalObjectRecursive(object);
             }
             break;
 
         case NASHORN_GRAAL_CHECK:
+            System.out.println("built (NASHORN GRAAL CHECK) -----------------");
             try (JsEngine.Evaluator evaluator = nashorn.newEvaluator(params);
                     JsEngine.Evaluator checker = graal.newEvaluator(params);
                     JsEngine.Evaluator checkingEvaluator = new CheckingJsEvaluator(evaluator, checker)) {
@@ -334,6 +343,8 @@ public class ConfigEvalEngine
             throw new UnsupportedOperationException();
         }
 
+        System.out.println("built (展開されている) -----------------");
+        System.out.println(built);
         return config.getFactory().create(built);
     }
 
