@@ -181,6 +181,7 @@ public class ConfigEvalEngine
                 JsonNode value = pair.getValue();
                 JsonNode evaluated;
                 if (NO_EVALUATE_PARAMETERS.contains(pair.getKey())) {
+                    System.out.println("NO_EVALUATE_PARAMETERS ======");
                     // don't evaluate _do and _else_do parameters
                     evaluated = value;
                 }
@@ -194,7 +195,7 @@ public class ConfigEvalEngine
                 else if (value.isTextual()) {
                     // eval using template engine
                     String code = value.textValue();
-                    evaluated = evalValue(built, code);
+                    evaluated = evalValue(built, code); // ここでネストした変数が展開できなくなっていそう
                     System.out.println("value.isTextualの中 value: "+value+", code: "+code+", evaluated: "+evaluated);
                 }
                 else {
