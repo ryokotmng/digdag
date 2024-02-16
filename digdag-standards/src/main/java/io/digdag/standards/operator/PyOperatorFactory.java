@@ -160,7 +160,7 @@ public class PyOperatorFactory
             final CommandContext commandContext = buildCommandContext(projectPath);
 
             System.out.println("runCode params ================");
-            System.out.println(params);
+                System.out.println(params); // "my_task": "${my_task}"がある
             final CommandStatus status;
             if (!state.has("commandStatus")) {
                 // Run the code since command state doesn't exist

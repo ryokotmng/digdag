@@ -122,6 +122,8 @@ public class OperatorManager
     {
         long taskId = request.getTaskId();
         String origThreadName = String.format("[%d:%s:%d:%d]%s", request.getSiteId(), request.getProjectName().or("----"), request.getSessionId(), request.getAttemptId(), request.getTaskName());
+        System.out.println("run の request =========");
+        System.out.println(request);
 
         // set task name to thread name so that logger shows it
         try (SetThreadName threadName = new SetThreadName(origThreadName)) {
@@ -146,6 +148,8 @@ public class OperatorManager
     @DigdagTimed(value = "opm_", category = "agent", appendMethodName = true)
     protected void runWithHeartbeat(TaskRequest request)
     {
+        System.out.println("runWithHeartbeat の request =========");
+        System.out.println(request); // タスク実行前のタイミングでここに来る
         try {
             workspaceManager.withExtractedArchive(request, () -> callback.openArchive(request), (projectPath) -> {
                 try {
@@ -234,6 +238,8 @@ public class OperatorManager
     protected void runWithWorkspace(Path projectPath, TaskRequest request)
         throws TaskExecutionException
     {
+        System.out.println("runWithWorkspaceに渡されたrequest ======");
+        System.out.println(request);
         // evaluate config and creates the complete merged config.
         Config config;
         try {
@@ -299,12 +305,16 @@ public class OperatorManager
 
         // Track accessed keys using UsedKeysSet class
         CheckedConfig.UsedKeysSet usedKeys = new CheckedConfig.UsedKeysSet();
+        System.out.println("request ===========");
+        System.out.println(request);
         TaskRequest mergedRequest = TaskRequest.builder()
             .from(request)
             .localConfig(new CheckedConfig(localConfig, usedKeys))
             .config(new CheckedConfig(config, usedKeys))
             .build();
 
+        System.out.println("callExecutor呼ぶところの mergedRequest ===========");
+        System.out.println(mergedRequest);
         TaskResult result = callExecutor(projectPath, type, mergedRequest);
 
         if (!usedKeys.isAllUsed()) {
@@ -371,15 +381,17 @@ public class OperatorManager
                 .operatorType(type)
                 .build();
 
+        // System.out.println("mergedRequest ===========");
+        // System.out.println(mergedRequest);
         // Users can mount secrets
         Config secretMounts = mergedRequest.getConfig().getNestedOrGetEmpty("_secrets");
         mergedRequest.getConfig().remove("_secrets");
 
         DefaultSecretProvider secretProvider = new DefaultSecretProvider(secretContext, secretMounts, secretStore);
 
-        System.out.println("localConfig ===========");
+        System.out.println("localConfig ここに実行するオペレータが入る ===========");
         Config localConfig = mergedRequest.getLocalConfig();
-        System.out.println(localConfig);
+        System.out.println(localConfig); // オペレータと並列に記載した変数はここに入るが、exportするとここには入らない(localじゃないからかな)
         PrivilegedVariables privilegedVariables = GrantedPrivilegedVariables.build(
                 localConfig.getNestedOrGetEmpty("_env"),
                 GrantedPrivilegedVariables.privilegedSecretProvider(secretContext, secretStore));
