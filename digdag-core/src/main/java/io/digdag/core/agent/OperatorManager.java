@@ -307,10 +307,13 @@ public class OperatorManager
         CheckedConfig.UsedKeysSet usedKeys = new CheckedConfig.UsedKeysSet();
         System.out.println("request (ここは展開されていない) ===========");
         System.out.println(request);
+        System.out.println("config ======");
+        // configはrequestから取得していそうだが、requestは展開されていなくてconfigは展開されていることから、evalConfigが原因かもしれない
+        System.out.println(config);
         TaskRequest mergedRequest = TaskRequest.builder()
             .from(request)
             .localConfig(new CheckedConfig(localConfig, usedKeys))
-            .config(new CheckedConfig(config, usedKeys))
+            .config(new CheckedConfig(config, usedKeys)) // このCheckedConfigの実行は展開されている
             .build();
 
         System.out.println("callExecutor呼ぶところの mergedRequest (ここは展開されている) ===========");

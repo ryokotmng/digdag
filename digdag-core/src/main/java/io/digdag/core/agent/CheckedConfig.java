@@ -33,6 +33,8 @@ public class CheckedConfig
     public CheckedConfig(Config config, UsedKeysSet usedKeys)
     {
         super(config);
+        System.out.println("CheckedConfig (ここは展開されている) ----------");
+        System.out.println(config);
         this.usedKeys = usedKeys;
     }
 
