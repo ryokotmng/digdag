@@ -238,8 +238,8 @@ public class OperatorManager
     protected void runWithWorkspace(Path projectPath, TaskRequest request)
         throws TaskExecutionException
     {
-        System.out.println("runWithWorkspaceに渡されたrequest ======");
-        System.out.println(request);
+        System.out.println("runWithWorkspaceに渡されたrequest (展開されていなさそう) ======");
+        System.out.println(request); // ここでは展開されていなかった
         // evaluate config and creates the complete merged config.
         Config config;
         try {
@@ -305,7 +305,7 @@ public class OperatorManager
 
         // Track accessed keys using UsedKeysSet class
         CheckedConfig.UsedKeysSet usedKeys = new CheckedConfig.UsedKeysSet();
-        System.out.println("request ===========");
+        System.out.println("request (ここは展開されていない) ===========");
         System.out.println(request);
         TaskRequest mergedRequest = TaskRequest.builder()
             .from(request)
@@ -313,7 +313,7 @@ public class OperatorManager
             .config(new CheckedConfig(config, usedKeys))
             .build();
 
-        System.out.println("callExecutor呼ぶところの mergedRequest ===========");
+        System.out.println("callExecutor呼ぶところの mergedRequest (ここは展開されている) ===========");
         System.out.println(mergedRequest);
         TaskResult result = callExecutor(projectPath, type, mergedRequest);
 
