@@ -213,6 +213,7 @@ public class ConfigEvalEngine
             throws TemplateException
         {
             ArrayNode built = array.arrayNode();
+            System.out.println("evalArrayRecursiveの中 ================");
             for (JsonNode value : array) {
                 JsonNode evaluated;
                 if (value.isObject()) {
@@ -237,7 +238,7 @@ public class ConfigEvalEngine
         private JsonNode evalValue(ObjectNode local, String code)
             throws TemplateException
         {
-            System.out.println("evalValueの中: "+code+local);
+            System.out.println("evalValueの中: "+code+", local: "+local);
             Config scopedParams = params.deepCopy();
             for (Map.Entry<String, JsonNode> pair : ImmutableList.copyOf(local.fields())) {
                 scopedParams.set(pair.getKey(), pair.getValue());
@@ -347,8 +348,6 @@ public class ConfigEvalEngine
             throw new UnsupportedOperationException();
         }
 
-        System.out.println("built (展開されている) -----------------");
-        System.out.println(built);
         return config.getFactory().create(built);
     }
 
