@@ -149,15 +149,19 @@ public class Config
 
     private static void mergeJsonObject(ObjectNode src, ObjectNode other)
     {
+        System.out.println("mergeJsonObjectにきた ===========");//この時点でもうotherに${my_task}が入っちゃってる
+        System.out.println("other :"+other);
         Iterator<Map.Entry<String, JsonNode>> ite = other.fields();
         while (ite.hasNext()) {
             Map.Entry<String, JsonNode> pair = ite.next();
             JsonNode s = src.get(pair.getKey());
             JsonNode v = pair.getValue();
+            System.out.println(s+": "+v);
             if (v.isObject() && s != null && s.isObject()) {
                 mergeJsonObject((ObjectNode) s, (ObjectNode) v);
             } else {
                 src.set(pair.getKey(), v);  // keeps order if key exists
+                System.out.println("src.setした: "+src);
             }
         }
     }

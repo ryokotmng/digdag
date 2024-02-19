@@ -219,6 +219,7 @@ public class OperatorManager
     {
         try {
             System.out.println("evalConfigに来た ===========");
+            System.out.println("request: "+request); // requestにstoreしたものも入っている
             Config all = cf.create(); // ここでparams作られる
             all.merge(request.getConfig());  // export / carry params (TaskRequest.config sent by WorkflowExecutor doesn't include config of this task)
             Config runtimeParams = RuntimeParams.buildRuntimeParams(request.getConfig().getFactory(), request).deepCopy();
@@ -402,7 +403,8 @@ public class OperatorManager
 
         System.out.println("localConfig ここに実行するオペレータが入る ===========");
         Config localConfig = mergedRequest.getLocalConfig();
-        System.out.println(localConfig); // オペレータと並列に記載した変数はここに入るが、exportするとここには入らない(localじゃないからかな)
+        System.out.println("localConfig: "+localConfig); // オペレータと並列に記載した変数はここに入るが、exportするとここには入らない(localじゃないからかな)
+        System.out.println("mergedRequest: "+mergedRequest); // オペレータと並列に記載した変数はここに入るが、exportするとここには入らない(localじゃないからかな)
         PrivilegedVariables privilegedVariables = GrantedPrivilegedVariables.build(
                 localConfig.getNestedOrGetEmpty("_env"),
                 GrantedPrivilegedVariables.privilegedSecretProvider(secretContext, secretStore));

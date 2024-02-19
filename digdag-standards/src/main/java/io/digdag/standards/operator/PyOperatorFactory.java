@@ -154,6 +154,7 @@ public class PyOperatorFactory
         private Config runCode(final Config state)
                 throws IOException, InterruptedException
         {
+            System.out.println(request.getConfig());
             final Config params = request.getConfig()
                     .mergeDefault(request.getConfig().getNestedOrGetEmpty("py"));
             final Path projectPath = workspace.getProjectPath(); // absolute
