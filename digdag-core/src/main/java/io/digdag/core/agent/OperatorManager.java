@@ -219,7 +219,7 @@ public class OperatorManager
     {
         try {
             System.out.println("evalConfigに来た ===========");
-            Config all = cf.create();
+            Config all = cf.create(); // ここでparams作られる
             all.merge(request.getConfig());  // export / carry params (TaskRequest.config sent by WorkflowExecutor doesn't include config of this task)
             Config runtimeParams = RuntimeParams.buildRuntimeParams(request.getConfig().getFactory(), request).deepCopy();
             all.merge(runtimeParams); //runtime parameter should not be override request parameters
@@ -229,7 +229,7 @@ public class OperatorManager
 
             System.out.println("all (展開されていない) ===========");
             System.out.println(all);
-            System.out.println("evalParams (展開されていない) ===========");
+            System.out.println("evalParams (ローカル変数以外は展開されていない) ===========");
             System.out.println(evalParams);
             //ToDo get metrics on parameter size
             return evalEngine.eval(all, evalParams);

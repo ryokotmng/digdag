@@ -318,6 +318,7 @@ public class ConfigEvalEngine
     {
         System.out.println("ConfigEvalEngine.java の eval にきた ==================");
         System.out.println("config: "+config);
+        System.out.println("params: "+params); // ここでは既にローカル変数だけ展開されている
         ObjectNode object = config.convert(ObjectNode.class);
 
         Object built;
@@ -331,7 +332,6 @@ public class ConfigEvalEngine
 
         case GRAAL:
             System.out.println("built (GRAAL) -----------------"); // ここには来ている
-            System.out.println("params: "+params);
             try (JsEngine.Evaluator evaluator = graal.newEvaluator(params)) {
                 System.out.println("evalObjectRecursiveに送るオブジェクト ================");
                 System.out.println(object);

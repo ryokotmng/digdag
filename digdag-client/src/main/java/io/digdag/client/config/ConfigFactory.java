@@ -28,6 +28,7 @@ public class ConfigFactory
 
     public Config fromJsonString(String json)
     {
+        System.out.println("ConfigFactory.java の fromJsonStringの中 =============");
         try {
             return new Config(objectMapper, objectMapper.readTree(json));
         }
