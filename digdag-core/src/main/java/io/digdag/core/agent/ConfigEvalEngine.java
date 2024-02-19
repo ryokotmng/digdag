@@ -176,10 +176,11 @@ public class ConfigEvalEngine
             throws TemplateException
         {
             System.out.println("evalObjectRecursiveの中 ================");
-            System.out.println(local);
+            System.out.println("local: "+local);
             ObjectNode built = local.objectNode();
             for (Map.Entry<String, JsonNode> pair : ImmutableList.copyOf(local.fields())) {
                 JsonNode value = pair.getValue();
+                String key = pair.getKey();
                 JsonNode evaluated;
                 if (NO_EVALUATE_PARAMETERS.contains(pair.getKey())) {
                     // don't evaluate _do and _else_do parameters
@@ -188,7 +189,7 @@ public class ConfigEvalEngine
                 else if (value.isObject()) {
                     evaluated = evalObjectRecursive((ObjectNode) value);
                     System.out.println("build: "+built);
-                    System.out.println("value.isObjectの中 value: "+value+", evaluated: "+evaluated);
+                    System.out.println("value.isObjectの中 key: "+key+"value: "+value+", evaluated: "+evaluated);
                 }
                 else if (value.isArray()) {
                     evaluated = evalArrayRecursive(built, (ArrayNode) value);
@@ -198,7 +199,8 @@ public class ConfigEvalEngine
                     String code = value.textValue();
                     evaluated = evalValue(built, code); // ここでネストした変数が展開できなくなっていそう
                     System.out.println("build: "+built);
-                    System.out.println("value.isTextualの中 value: "+value+", code: "+code+", evaluated: "+evaluated);
+                    System.out.println("value.isTextualの中 key: "+key+"value: "+value+", code: "+code+", evaluated: "+evaluated);
+                    
                 }
                 else {
                     evaluated = value;
@@ -213,7 +215,6 @@ public class ConfigEvalEngine
             throws TemplateException
         {
             ArrayNode built = array.arrayNode();
-            System.out.println("evalArrayRecursiveの中 ================");
             for (JsonNode value : array) {
                 JsonNode evaluated;
                 if (value.isObject()) {
@@ -316,6 +317,7 @@ public class ConfigEvalEngine
         throws TemplateException
     {
         System.out.println("ConfigEvalEngine.java の eval にきた ==================");
+        System.out.println("config: "+config);
         ObjectNode object = config.convert(ObjectNode.class);
 
         Object built;
