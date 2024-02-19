@@ -333,6 +333,8 @@ public class ConfigEvalEngine
             System.out.println("built (GRAAL) -----------------"); // ここには来ている
             System.out.println("params: "+params);
             try (JsEngine.Evaluator evaluator = graal.newEvaluator(params)) {
+                System.out.println("evalObjectRecursiveに送るオブジェクト ================");
+                System.out.println(object);
                 built = new Context(params, evaluator).evalObjectRecursive(object);
             }
             break;
