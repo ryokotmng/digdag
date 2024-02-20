@@ -176,6 +176,7 @@ public class ConfigEvalEngine
             throws TemplateException
         {
             ObjectNode built = local.objectNode();
+            System.out.println("evalObjectRecursive =======");
             for (Map.Entry<String, JsonNode> pair : ImmutableList.copyOf(local.fields())) {
                 JsonNode value = pair.getValue();
                 JsonNode evaluated;
@@ -184,6 +185,7 @@ public class ConfigEvalEngine
                     evaluated = value;
                 }
                 else if (value.isObject()) {
+                    System.out.println("isObject: "+value);
                     evaluated = evalObjectRecursive((ObjectNode) value);
                 }
                 else if (value.isArray()) {
@@ -192,7 +194,9 @@ public class ConfigEvalEngine
                 else if (value.isTextual()) {
                     // eval using template engine
                     String code = value.textValue();
+                    System.out.println("isTextual code: "+code+", evalValueのbuilt: "+built);
                     evaluated = evalValue(built, code);
+                    System.out.println("isTextual code: "+code+", evaluated: "+evaluated);
                 }
                 else {
                     evaluated = value;
@@ -230,10 +234,13 @@ public class ConfigEvalEngine
         private JsonNode evalValue(ObjectNode local, String code)
             throws TemplateException
         {
-            Config scopedParams = params.deepCopy();
+            // System.out.println("params :"+params);
+            Config scopedParams = params.deepCopy(); // <- こいつに展開されていない状態の変数が全部入っている
             for (Map.Entry<String, JsonNode> pair : ImmutableList.copyOf(local.fields())) {
+                // ここで、展開されていない状態の変数の連想配列に対してlocalのデータをupsertしている
                 scopedParams.set(pair.getKey(), pair.getValue());
             }
+            System.out.println("scopedParams :"+scopedParams);
             String resultText = null;
             if (isInvokeTemplateRequired(code)) {
                 resultText = evaluator.evaluate(code, scopedParams, jsonMapper);
