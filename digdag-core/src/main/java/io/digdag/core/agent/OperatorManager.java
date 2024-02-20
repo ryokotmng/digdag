@@ -122,6 +122,8 @@ public class OperatorManager
     {
         long taskId = request.getTaskId();
         String origThreadName = String.format("[%d:%s:%d:%d]%s", request.getSiteId(), request.getProjectName().or("----"), request.getSessionId(), request.getAttemptId(), request.getTaskName());
+        System.out.println("run の request =========");
+        System.out.println(request);
 
         // set task name to thread name so that logger shows it
         try (SetThreadName threadName = new SetThreadName(origThreadName)) {
@@ -146,6 +148,8 @@ public class OperatorManager
     @DigdagTimed(value = "opm_", category = "agent", appendMethodName = true)
     protected void runWithHeartbeat(TaskRequest request)
     {
+        System.out.println("runWithHeartbeat の request =========");
+        System.out.println(request); // タスク実行前のタイミングでここに来る
         try {
             workspaceManager.withExtractedArchive(request, () -> callback.openArchive(request), (projectPath) -> {
                 try {
@@ -214,7 +218,9 @@ public class OperatorManager
             throws RuntimeException, AssertionError
     {
         try {
-            Config all = cf.create();
+            System.out.println("evalConfigに来た ===========");
+            System.out.println("request: "+request); // requestにstoreしたものも入っている
+            Config all = cf.create(); // ここでparams作られる
             all.merge(request.getConfig());  // export / carry params (TaskRequest.config sent by WorkflowExecutor doesn't include config of this task)
             Config runtimeParams = RuntimeParams.buildRuntimeParams(request.getConfig().getFactory(), request).deepCopy();
             all.merge(runtimeParams); //runtime parameter should not be override request parameters
@@ -222,6 +228,10 @@ public class OperatorManager
             Config evalParams = all.deepCopy();
             all.merge(request.getLocalConfig());
 
+            System.out.println("all (展開されていない) ===========");
+            System.out.println(all);
+            System.out.println("evalParams (ローカル変数以外は展開されていない) ===========");
+            System.out.println(evalParams);
             //ToDo get metrics on parameter size
             return evalEngine.eval(all, evalParams);
         }
@@ -234,10 +244,15 @@ public class OperatorManager
     protected void runWithWorkspace(Path projectPath, TaskRequest request)
         throws TaskExecutionException
     {
+        System.out.println("runWithWorkspaceに渡されたrequest (展開されていなさそう) ======");
+        System.out.println(request); // ここでは展開されていなかった
         // evaluate config and creates the complete merged config.
         Config config;
         try {
+            // ここでrequestからconfigを作っている
             config = evalConfig(request);
+            System.out.println("evalConfigの結果 ===========");
+            System.out.println(config);
         }
         catch (ConfigException ex) {
             throw ex;
@@ -299,12 +314,19 @@ public class OperatorManager
 
         // Track accessed keys using UsedKeysSet class
         CheckedConfig.UsedKeysSet usedKeys = new CheckedConfig.UsedKeysSet();
+        System.out.println("request (ここは展開されていない) ===========");
+        System.out.println(request);
+        System.out.println("config ======");
+        // configはrequestから取得していそうだが、requestは展開されていなくてconfigは展開されていることから、evalConfigが原因かもしれない
+        System.out.println(config);
         TaskRequest mergedRequest = TaskRequest.builder()
             .from(request)
             .localConfig(new CheckedConfig(localConfig, usedKeys))
-            .config(new CheckedConfig(config, usedKeys))
+            .config(new CheckedConfig(config, usedKeys)) // このCheckedConfigの実行は展開されている
             .build();
 
+        System.out.println("callExecutor呼ぶところの mergedRequest (ここは展開されている) ===========");
+        System.out.println(mergedRequest);
         TaskResult result = callExecutor(projectPath, type, mergedRequest);
 
         if (!usedKeys.isAllUsed()) {
@@ -371,19 +393,26 @@ public class OperatorManager
                 .operatorType(type)
                 .build();
 
+        // System.out.println("mergedRequest ===========");
+        // System.out.println(mergedRequest);
         // Users can mount secrets
         Config secretMounts = mergedRequest.getConfig().getNestedOrGetEmpty("_secrets");
         mergedRequest.getConfig().remove("_secrets");
 
         DefaultSecretProvider secretProvider = new DefaultSecretProvider(secretContext, secretMounts, secretStore);
 
+        System.out.println("localConfig ここに実行するオペレータが入る ===========");
+        Config localConfig = mergedRequest.getLocalConfig();
+        System.out.println("localConfig: "+localConfig); // オペレータと並列に記載した変数はここに入るが、exportするとここには入らない(localじゃないからかな)
+        System.out.println("mergedRequest: "+mergedRequest); // オペレータと並列に記載した変数はここに入るが、exportするとここには入らない(localじゃないからかな)
         PrivilegedVariables privilegedVariables = GrantedPrivilegedVariables.build(
-                mergedRequest.getLocalConfig().getNestedOrGetEmpty("_env"),
+                localConfig.getNestedOrGetEmpty("_env"),
                 GrantedPrivilegedVariables.privilegedSecretProvider(secretContext, secretStore));
 
         OperatorContext context = new DefaultOperatorContext(
                 projectPath, mergedRequest, secretProvider, privilegedVariables, limits);
 
+        System.out.println("OperatorManager#callExecutor newOperator呼ぶところ===========");
         Operator operator = factory.newOperator(context);
 
         if (mergedRequest.isCancelRequested()) {
